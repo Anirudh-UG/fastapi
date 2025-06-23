@@ -1,10 +1,74 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, Depends, status, Response, HTTPException
+from sqlalchemy.orm import Session
+from .schemas import Blog
 
-from model import Blog
+from .models import Base
+from .database import SessionLocal, engine
+from sqlalchemy.orm import Session
+
+from blog import models
 
 app = FastAPI()
 
+Base.metadata.create_all(engine)
 
-@app.post("/blog")
-def create(request: Blog):
-    return request
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+@app.post("/blog", status_code=status.HTTP_201_CREATED)
+def create(request: Blog, db: Session = Depends(get_db)):
+    new_blog = models.Blog(title=request.title, body=request.body)
+    db.add(new_blog)
+    db.commit()
+    db.refresh(new_blog)
+    return new_blog
+
+
+@app.delete("/blog/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_blog(id: int, db: Session = Depends(get_db)):
+    blog = (
+        db.query(models.Blog)
+        .filter(models.Blog.id == id)
+        .delete(synchronize_session=False)
+    )
+    db.commit()
+    return {"message": "The id has been deleted from the database"}
+
+
+@app.get("/blog")
+def fetch(db: Session = Depends(get_db)):
+    blogs = db.query(models.Blog).all()
+    return blogs
+
+
+@app.put("/blog/{id}", status_code=status.HTTP_202_ACCEPTED)
+def update_blog(id: int, request: Blog, db: Session = Depends(get_db)):
+    blog_query = db.query(models.Blog).filter(models.Blog.id == id)
+    blog = blog_query.first()
+
+    if not blog:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Blog with id {id} not found.",
+        )
+
+    blog_query.update(request.dict())
+    db.commit()
+    return {"message": "Updated Successfully"}
+
+
+@app.get("/blog/{id}", status_code=status.HTTP_200_OK)
+def fetch_single_blog(id: int, response: Response, db: Session = Depends(get_db)):
+    blog = db.query(models.Blog).filter(models.Blog.id == id).first()
+    if not blog:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Blog with the id {id} is not available",
+        )
+    return blog

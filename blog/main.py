@@ -32,11 +32,12 @@ def create(request: Blog, db: Session = Depends(get_db)):
 
 @app.delete("/blog/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_blog(id: int, db: Session = Depends(get_db)):
-    blog = (
-        db.query(models.Blog)
-        .filter(models.Blog.id == id)
-        .delete(synchronize_session=False)
-    )
+    blog = db.query(models.Blog).filter(models.Blog.id == id)
+    if not blog.first():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Blog with id {id} not found"
+        )
+    blog.delete(synchronize_session=False)
     db.commit()
     return {"message": "The id has been deleted from the database"}
 
@@ -58,7 +59,7 @@ def update_blog(id: int, request: Blog, db: Session = Depends(get_db)):
             detail=f"Blog with id {id} not found.",
         )
 
-    blog_query.update(request.dict())
+    blog_query.update({"title": request.title, "body": request.body})
     db.commit()
     return {"message": "Updated Successfully"}
 

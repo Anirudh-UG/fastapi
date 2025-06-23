@@ -1,6 +1,4 @@
-Here’s a simple and effective README.md template for your FastAPI project. You can copy and paste this into your README.md file and customize as needed:
 
-````markdown
 # FastAPI + MongoDB Project
 
 A starter project using [FastAPI](https://fastapi.tiangolo.com/) with MongoDB, ready for development and deployment.

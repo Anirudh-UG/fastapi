@@ -1,7 +1,7 @@
 from fastapi import Depends, FastAPI, Depends, status, Response, HTTPException
 from sqlalchemy.orm import Session
-from .schemas import Blog
-
+from .schemas import Blog, ShowBlog, User
+from typing import List
 from .models import Base
 from .database import SessionLocal, engine
 from sqlalchemy.orm import Session
@@ -42,7 +42,7 @@ def delete_blog(id: int, db: Session = Depends(get_db)):
     return {"message": "The id has been deleted from the database"}
 
 
-@app.get("/blog")
+@app.get("/blog", response_model=List[ShowBlog])
 def fetch(db: Session = Depends(get_db)):
     blogs = db.query(models.Blog).all()
     return blogs
@@ -64,7 +64,7 @@ def update_blog(id: int, request: Blog, db: Session = Depends(get_db)):
     return {"message": "Updated Successfully"}
 
 
-@app.get("/blog/{id}", status_code=status.HTTP_200_OK)
+@app.get("/blog/{id}", status_code=status.HTTP_200_OK, response_model=ShowBlog)
 def fetch_single_blog(id: int, response: Response, db: Session = Depends(get_db)):
     blog = db.query(models.Blog).filter(models.Blog.id == id).first()
     if not blog:
@@ -73,3 +73,14 @@ def fetch_single_blog(id: int, response: Response, db: Session = Depends(get_db)
             detail=f"Blog with the id {id} is not available",
         )
     return blog
+
+
+@app.post("/user")
+def create_user(request: User, db: Session = Depends(get_db)):
+    new_user = models.User(
+        name=request.name, email=request.email, password=request.password
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user

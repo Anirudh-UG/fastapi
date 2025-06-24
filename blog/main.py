@@ -1,5 +1,7 @@
 from fastapi import Depends, FastAPI, Depends, status, Response, HTTPException
 from sqlalchemy.orm import Session
+
+from blog.validity import check_valid_email, check_valid_name
 from .schemas import Blog, ShowBlog, User
 from typing import List
 from .models import Base
@@ -75,12 +77,23 @@ def fetch_single_blog(id: int, response: Response, db: Session = Depends(get_db)
     return blog
 
 
-@app.post("/user")
+@app.post("/user", status_code=status.HTTP_201_CREATED)
 def create_user(request: User, db: Session = Depends(get_db)):
     new_user = models.User(
         name=request.name, email=request.email, password=request.password
     )
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return new_user
+    if not check_valid_email(request.email):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please enter a valid email",
+        )
+    elif not check_valid_name(request.name):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please enter a valid Name",
+        )
+    else:
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        return new_user

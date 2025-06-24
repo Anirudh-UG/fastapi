@@ -13,3 +13,5 @@ wheels/
 uv.lock
 .venv
 uv.lock
+misc
+blog/fastapi-sqlite

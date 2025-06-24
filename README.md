@@ -1,20 +1,33 @@
+# FastAPI Blog API
 
-# FastAPI + MongoDB Project
-
-A starter project using [FastAPI](https://fastapi.tiangolo.com/) with MongoDB, ready for development and deployment.
+A simple blog API built with [FastAPI](https://fastapi.tiangolo.com/), [SQLAlchemy](https://www.sqlalchemy.org/), and SQLite.  
+This project demonstrates CRUD operations for blog posts and user creation, with validation logic.
 
 ## Features
 
-- FastAPI for building APIs
-- MongoDB for database
-- Modern Python project structure
-- Easy to extend and deploy
+- FastAPI for high-performance APIs
+- SQLAlchemy ORM with SQLite database
+- Pydantic models for data validation
+- User and Blog management
+- Custom validation for using Regular Expressions
 
-## Requirements
+## Project Structure
 
-- Python 3.8+
-- MongodDB (local or remote)
-- [uvicorn](https://www.uvicorn.org/) for development server
+```
+fastapi-postgres/
+│
+├── blog/
+│   ├── __init__.py
+│   ├── database.py
+│   ├── main.py         # Main FastAPI app and endpoints
+│   ├── models.py       # SQLAlchemy models
+│   ├── schemas.py      # Pydantic schemas
+│   ├── validity.py     # Custom validation functions
+│
+├── blog.db             # SQLite database file
+├── pyproject.toml      # Project dependencies
+└── README.md           # (You are here)
+```
 
 ## Setup
 
@@ -35,49 +48,48 @@ A starter project using [FastAPI](https://fastapi.tiangolo.com/) with MongoDB, r
 3. **Install dependencies:**
 
    ```bash
-   pip install -r requirements.txt
-   ```
-
-   Or, if using `pyproject.toml`:
-
-   ```bash
    pip install -e .
    ```
 
-4. **Set up environment variables:**
-   Create a `.env` file and add your database connection string:
+   Or, if you use requirements.txt:
 
-   ```
-   DATABASE_URL= "Your Database URL"
-   ```
-
-5. **Run the application:**
    ```bash
-   uvicorn main:app --reload
+   pip install -r requirements.txt
    ```
 
-## Project Structure
+4. **Run the application:**
 
-```
-fastapi-postgres/
-│
-├── main.py
-├── pyproject.toml
-├── README.md
-├── .gitignore
-└── ...
-```
+   ```bash
+   uvicorn blog.main:app --reload
+   ```
 
-## Usage
+5. **Access the API docs:**
+   - Open [http://localhost:8000/docs](http://localhost:8000/docs) in your browser.
 
-- Visit [http://localhost:8000/docs](http://localhost:8000/docs) for the interactive API docs.
-- Add your API endpoints in `main.py` or inside the `fastapi-postgres/` directory.
+## API Endpoints
 
-## License
+### Blog
 
-This project is licensed under the MIT License.
+- `POST /blog`  
+  Create a new blog post.
 
-```
+- `GET /blog`  
+  Get all blog posts.
 
+- `GET /blog/{id}`  
+  Get a single blog post by ID.
 
-````
+- `PUT /blog/{id}`  
+  Update a blog post by ID.
+
+- `DELETE /blog/{id}`  
+  Delete a blog post by ID.
+
+### User
+
+- `POST /user`  
+  Create a new user (with email and name validation).
+
+## Custom Validation
+
+- Email and name validation are handled in `blog/validity.py` and used in the user creation endpoint.
